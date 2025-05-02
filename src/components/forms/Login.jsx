@@ -1,19 +1,13 @@
 import { useRef } from 'react'
 import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
-import { loginErrors } from '../../Constants'
 
 export default function Login() {
   const emailRef = useRef()
   const passwordRef = useRef()
 
   const { notify } = useNotification()
-  const { fetchSession } = useSession()
-
-  const clearForm = () => {
-    emailRef.current.value = ""
-    passwordRef.current.value = ""
-  }
+  const { login } = useSession()
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -22,22 +16,8 @@ export default function Login() {
     const password = passwordRef.current.value
 
     try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      if (!response.ok) {
-        const cause = loginErrors[response.status] || loginErrors.default
-        throw new Error('Login failed', { cause })
-      }
-
+      await login(email, password)
       notify('Successfully logged in!', 'success')
-      clearForm()
-      fetchSession()
     } catch (err) {
       console.error(err)
       notify(err.cause || err.message, 'error')

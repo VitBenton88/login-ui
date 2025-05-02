@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { loginErrors } from '../Constants'
 
 const SessionContext = createContext()
 
@@ -25,16 +26,49 @@ export function SessionProvider({ children }) {
     fetchSession()
   }, [fetchSession])
 
+  const login = async (email, password) => {
+    setLoading(true)
+
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
+
+      if (!response.ok) {
+        const cause = loginErrors[response.status] || loginErrors.default
+        throw new Error('Login failed', { cause })
+      }
+
+      fetchSession()
+    } catch (error) {
+      throw new Error(error.cause || error.message)
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const logout = async () => {
-    await fetch('/logout', {
-      method: 'POST',
-      credentials: 'include',
-    })
-    setIsLoggedIn(false)
+    setLoading(true)
+
+    try {
+      await fetch('/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      setIsLoggedIn(false)
+    } catch (error) {
+      throw new Error(error.message)
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <SessionContext.Provider value={{ isLoggedIn, logout, loading, fetchSession, userEmail }}>
+    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userEmail }}>
       {children}
     </SessionContext.Provider>
   )

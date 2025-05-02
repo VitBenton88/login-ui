@@ -11,6 +11,7 @@ export default defineConfig({
       '/logout': 'http://localhost:3000',
       '/me': 'http://localhost:3000',
       '/register': 'http://localhost:3000',
+      '/users': 'http://localhost:3000',
     }
   }
 })

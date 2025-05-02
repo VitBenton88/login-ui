@@ -10,15 +10,16 @@ export function SessionProvider({ children }) {
 
   const fetchSession = useCallback(async () => {
     try {
-      const { email } = await getSessionUserInfo();
-      setIsLoggedIn(true)
-      setUserEmail(email)
+      if (isLoggedIn) {
+        const { email } = await getSessionUserInfo();
+        setUserEmail(email)
+      }
     } catch (error) {
       throw new Error(error.cause || error.message)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [isLoggedIn])
 
   useEffect(() => {
     fetchSession()
@@ -29,6 +30,7 @@ export function SessionProvider({ children }) {
       setLoading(true)
       await userLogin(email, password);
       await fetchSession()
+      setIsLoggedIn(true)
     } catch (error) {
       console.log(error);
       throw new Error(error.cause || error.message)

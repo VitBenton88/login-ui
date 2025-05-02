@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState } from "react"
+import Loader from './Loader'
 import { useSession } from '../contexts/SessionContext'
 import { useNotification } from '../contexts/NotificationContext'
+import { deleteUserById, getAllUsers } from '../Api'
 
 export default function UsersTable() {
   const { userEmail } = useSession()
   const { notify } = useNotification()
 
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState([]);
 
   const handleClick = useCallback(id => {
     const controller = new AbortController();
     const deleteUser = async (userId = id) => {
       try {
-        const res = await fetch(`/delete/${userId}`, { credentials: 'include', method: 'DELETE', signal: controller.signal })
-        if (!res.ok) throw new Error('Failed to delete user.')
+        await deleteUserById(userId, controller.signal);
 
         setUsers(prev => prev.filter(({ id }) => id !== userId))
         notify('Successfully deleted user.', 'success')
@@ -32,12 +34,12 @@ export default function UsersTable() {
     const controller = new AbortController();
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/users', { credentials: 'include', signal: controller.signal })
-        if (!res.ok) throw new Error('Failed to fetch users.')
-        const fetchedUsers = await res.json();
+        const fetchedUsers = await getAllUsers(controller.signal);
         setUsers(fetchedUsers);
       } catch (err) {
-        // not sure
+        notify(err.cause || err.message, 'error')
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -45,6 +47,8 @@ export default function UsersTable() {
 
     return () => controller.abort();
   }, [])
+
+  if (loading) return <Loader />
 
   return (
     <table>

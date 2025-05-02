@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { loginErrors } from '../Constants'
+import { getSessionUserInfo, userLogin, userLogout } from '../Api'
 
 const SessionContext = createContext()
 
@@ -10,13 +10,11 @@ export function SessionProvider({ children }) {
 
   const fetchSession = useCallback(async () => {
     try {
-      const res = await fetch('/me', { credentials: 'include' })
-      if (!res.ok) throw new Error('Not authenticated')
-      const { email } = await res.json();
+      const { email } = await getSessionUserInfo();
       setIsLoggedIn(true)
       setUserEmail(email)
-    } catch (err) {
-      // not sure
+    } catch (error) {
+      throw new Error(error.cause || error.message)
     } finally {
       setLoading(false)
     }
@@ -27,24 +25,12 @@ export function SessionProvider({ children }) {
   }, [fetchSession])
 
   const login = async (email, password) => {
-    setLoading(true)
-
     try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      if (!response.ok) {
-        const cause = loginErrors[response.status] || loginErrors.default
-        throw new Error('Login failed', { cause })
-      }
-
-      fetchSession()
+      setLoading(true)
+      await userLogin(email, password);
+      await fetchSession()
     } catch (error) {
+      console.log(error);
       throw new Error(error.cause || error.message)
     } finally {
       setLoading(false);
@@ -52,13 +38,9 @@ export function SessionProvider({ children }) {
   }
 
   const logout = async () => {
-    setLoading(true)
-
     try {
-      await fetch('/logout', {
-        method: 'POST',
-        credentials: 'include',
-      })
+      setLoading(true)
+      await userLogout()
       setIsLoggedIn(false)
     } catch (error) {
       throw new Error(error.message)

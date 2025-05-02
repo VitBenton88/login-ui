@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useNotification } from '../../contexts/NotificationContext'
-import { registrationErrors } from '../../Constants'
+import { registerUser } from '../../Api'
 
 export default function Register() {
   const emailRef = useRef()
@@ -19,18 +19,7 @@ export default function Register() {
     const password = passwordRef.current.value
 
     try {
-      const response = await fetch('/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      if (!response.ok) {
-        const cause = registrationErrors[response.status] || registrationErrors.default
-        throw new Error('Registration failed', { cause })
-      }
+      registerUser(email, password)
 
       notify('Successfully registered!', 'success')
       clearForm()

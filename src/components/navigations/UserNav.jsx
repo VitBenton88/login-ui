@@ -1,7 +1,7 @@
 import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
 
-export default function UserNav({ onSelect, showLogin }) {
+export default function UserNav() {
   const { logout, userEmail } = useSession()
   const { notify } = useNotification()
 

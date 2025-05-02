@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import Loader from './Loader'
 import { useSession } from '../contexts/SessionContext'
 import { useNotification } from '../contexts/NotificationContext'
-import { deleteUserById, getAllUsers } from '../Api'
+import { deleteUserById, getAllUsers } from '../api'
 
 export default function UsersTable() {
   const { userEmail } = useSession()

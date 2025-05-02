@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useNotification } from '../../contexts/NotificationContext'
-import { registerUser } from '../../Api'
+import { registerUser } from '../../api'
 
 export default function Register() {
   const emailRef = useRef()

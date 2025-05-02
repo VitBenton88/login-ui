@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getSessionUserInfo, userLogin, userLogout } from '../Api'
+import { getSessionUserInfo, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
 

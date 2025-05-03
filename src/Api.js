@@ -1,7 +1,7 @@
 import { loginErrors, registrationErrors } from './Constants'
 
 export async function deleteUserById(userId, signal) {
-  const response = await fetch(`/delete/${userId}`, {
+  const response = await fetch(`/api/delete/${userId}`, {
     method: 'DELETE',
     credentials: 'include',
     signal
@@ -16,7 +16,7 @@ export async function deleteUserById(userId, signal) {
 }
 
 export async function getAllUsers(signal) {
-  const response = await fetch('/users', {
+  const response = await fetch('/api/users', {
     credentials: 'include',
     signal
   });
@@ -30,7 +30,7 @@ export async function getAllUsers(signal) {
 }
 
 export async function registerUser(email, password) {
-  const response = await fetch('/register', {
+  const response = await fetch('/api/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -45,7 +45,7 @@ export async function registerUser(email, password) {
 }
 
 export async function getSessionUserInfo(signal) {
-  const response = await fetch('/me', {
+  const response = await fetch('/api/me', {
     credentials: 'include',
     signal
   });
@@ -59,7 +59,7 @@ export async function getSessionUserInfo(signal) {
 }
 
 export async function userLogin(email, password, signal) {
-  const response = await fetch('/login', {
+  const response = await fetch('/api/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -78,7 +78,7 @@ export async function userLogin(email, password, signal) {
 }
 
 export async function userLogout(signal) {
-  const response = await fetch('/logout', {
+  const response = await fetch('/api/logout', {
     method: 'POST',
     credentials: 'include',
     signal

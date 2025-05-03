@@ -6,12 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/delete': 'http://localhost:3000',
-      '/login': 'http://localhost:3000',
-      '/logout': 'http://localhost:3000',
-      '/me': 'http://localhost:3000',
-      '/register': 'http://localhost:3000',
-      '/users': 'http://localhost:3000',
+      '^/(login|logout|register|me|delete|users)': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     }
   }
 })

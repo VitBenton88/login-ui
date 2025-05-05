@@ -29,8 +29,8 @@ export function SessionProvider({ children }) {
     try {
       setLoading(true)
       await userLogin(email, password);
-      await fetchSession()
       setIsLoggedIn(true)
+      await fetchSession()
     } catch (error) {
       console.log(error);
       throw new Error(error.cause || error.message)

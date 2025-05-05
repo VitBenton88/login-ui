@@ -36,6 +36,7 @@ export default function LogsTable() {
         <tr>
           <th>Email</th>
           <th>Success</th>
+          <th>Message</th>
           <th>Timestamp</th>
         </tr>
       </thead>
@@ -47,6 +48,9 @@ export default function LogsTable() {
             </td>
             <td>
               {log.success ? '✅' : '❌'}
+            </td>
+            <td>
+              {log.message}
             </td>
             <td>
               {log.timestamp}

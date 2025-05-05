@@ -28,6 +28,7 @@ export default function LogsTable() {
   }, [])
 
   if (loading) return <Loader />
+  if (!logs.length) return <p>No logs found.</p>
 
   return (
     <table>

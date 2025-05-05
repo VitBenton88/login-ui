@@ -23,7 +23,7 @@ export function SessionProvider({ children }) {
 
   useEffect(() => {
     fetchSession()
-  }, [fetchSession])
+  }, [isLoggedIn])
 
   const login = async (email, password) => {
     try {

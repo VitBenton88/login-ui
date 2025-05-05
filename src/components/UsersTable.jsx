@@ -9,7 +9,7 @@ export default function UsersTable() {
   const { notify } = useNotification()
 
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleClick = useCallback(id => {
     const controller = new AbortController();

@@ -1,6 +1,6 @@
 import UserNav from '../components/navigations/UserNav'
-import LogsTable from '../components/LogsTable'
-import UsersTable from '../components/UsersTable'
+import LogsTable from '../components/tables/LogsTable'
+import UsersTable from '../components/tables/UsersTable'
 
 export default function ProtectedApp() {
   return (

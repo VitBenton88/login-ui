@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import Loader from './Loader'
-import { useNotification } from '../contexts/NotificationContext'
-import { getAllLogs } from '../api'
+import Loader from '../Loader'
+import { useNotification } from '../../contexts/NotificationContext'
+import { getAllLogs } from '../../api'
 
 export default function LogsTable() {
   const { notify } = useNotification()

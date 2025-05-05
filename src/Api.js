@@ -15,6 +15,20 @@ export async function deleteUserById(userId, signal) {
   return jsonResponse;
 }
 
+export async function getAllLogs(signal) {
+  const response = await fetch('/logs/getAll', {
+    credentials: 'include',
+    signal
+  });
+  const jsonResponse = await response.json();
+
+  if (!response.ok) {
+    throw new Error(jsonResponse?.message || 'Failed to fetch all logs.');
+  }
+
+  return jsonResponse;
+}
+
 export async function getAllUsers(signal) {
   const response = await fetch('/users/getAll', {
     credentials: 'include',

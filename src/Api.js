@@ -59,17 +59,17 @@ export async function registerUser(email, password) {
 }
 
 export async function updateUserEmail(email) {
-  const response = await fetch('/auth/register', {
-    method: 'POST',
+  const response = await fetch(`/update/${email}`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email })
   })
 
   if (!response.ok) {
-    const cause = registrationErrors[response.status] || registrationErrors.default
-    throw new Error('Registration failed.', { cause })
+    const cause = updateErrors[response.status] || updateErrors.default
+    throw new Error('User update failed.', { cause })
   }
 }
 

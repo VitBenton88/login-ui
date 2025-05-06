@@ -18,3 +18,13 @@ export const loginErrors = {
   429: 'Too many login attempts. Please try again later.',
   default: 'An unexpected error occurred during login. Please try again.',
 }
+
+export const updateErrors = {
+  400: 'Invalid update request. Please check your input.',
+  401: 'Incorrect details provided.',
+  403: 'Your account is not authorized for this operation.',
+  404: 'Account not found. Please register first.',
+  409: 'This account is already logged in elsewhere.',
+  429: 'Too many update attempts. Please try again later.',
+  default: 'An unexpected error occurred. Please try again.',
+}

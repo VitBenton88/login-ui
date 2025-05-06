@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getSessionUserInfo, userLogin, userLogout } from '../api'
+import { getSessionUserInfo, updateUserEmail, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
 
@@ -39,6 +39,18 @@ export function SessionProvider({ children }) {
     }
   }
 
+  const updateEmail = async email => {
+    try {
+      setLoading(true)
+      await updateUserEmail(email)
+    } catch (error) {
+      console.log(error);
+      throw new Error(error.cause || error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const logout = async () => {
     try {
       setLoading(true)
@@ -52,7 +64,7 @@ export function SessionProvider({ children }) {
   }
 
   return (
-    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userEmail }}>
+    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, updateEmail, userEmail }}>
       {children}
     </SessionContext.Provider>
   )

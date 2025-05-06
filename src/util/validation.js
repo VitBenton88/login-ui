@@ -1,6 +1,4 @@
-const isValidEmail = function(email) {
+export async function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
-
-export default { isValidEmail };

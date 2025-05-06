@@ -5,7 +5,7 @@ import { useNotification } from '../../contexts/NotificationContext'
 import { deleteUserById, getAllUsers } from '../../api'
 
 export default function UsersTable() {
-  const { userEmail } = useSession()
+  const { userId } = useSession()
   const { notify } = useNotification()
 
   const [users, setUsers] = useState([]);
@@ -66,7 +66,7 @@ export default function UsersTable() {
             </td>
             <td>
               <button
-                disabled={userEmail === user.email}
+                disabled={userId === user.id}
                 onClick={() => handleClick(user.id)}
               >
                 Delete

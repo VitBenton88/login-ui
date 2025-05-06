@@ -64,7 +64,7 @@ export function SessionProvider({ children }) {
   }
 
   return (
-    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail, userEmail }}>
+    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail }}>
       {children}
     </SessionContext.Provider>
   )

@@ -11,7 +11,7 @@ export function SessionProvider({ children }) {
   const fetchSession = useCallback(async () => {
     try {
       if (isLoggedIn) {
-        const { email } = await getSessionUserInfo();
+        const { email } = await getSessionUserInfo()
         setUserEmail(email)
       }
     } catch (error) {
@@ -28,14 +28,14 @@ export function SessionProvider({ children }) {
   const login = async (email, password) => {
     try {
       setLoading(true)
-      await userLogin(email, password);
+      await userLogin(email, password)
       setIsLoggedIn(true)
       await fetchSession()
     } catch (error) {
-      console.log(error);
+      console.log(error)
       throw new Error(error.cause || error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -47,7 +47,7 @@ export function SessionProvider({ children }) {
     } catch (error) {
       throw new Error(error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 

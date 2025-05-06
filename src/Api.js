@@ -1,5 +1,19 @@
 import { loginErrors, registrationErrors, updateErrors } from './util/constants'
 
+export async function getUserbyId(userId, signal) {
+  const response = await fetch(`/users/${userId}`, {
+    credentials: 'include',
+    signal
+  });
+  const jsonResponse = await response.json();
+
+  if (!response.ok) {
+    throw new Error(jsonResponse?.message || 'Failed to fetch user.');
+  }
+
+  return jsonResponse;
+}
+
 export async function deleteUserById(userId, signal) {
   const response = await fetch(`/users/delete/${userId}`, {
     method: 'DELETE',

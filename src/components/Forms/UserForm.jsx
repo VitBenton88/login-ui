@@ -3,7 +3,7 @@ import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
 
 export default function UserForm() {
-  const { updateEmail, userId, userEmail } = useSession()
+  const { updateEmail, userId, user } = useSession()
   const [newEmail, setEmail] = useState('')
 
   const { notify } = useNotification()
@@ -26,7 +26,7 @@ export default function UserForm() {
         <input
           type='email'
           value={newEmail}
-          placeholder={userEmail}
+          placeholder={user.email}
           onChange={e => setEmail(e.target.value)}
           required
         />

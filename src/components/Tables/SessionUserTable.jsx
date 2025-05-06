@@ -1,19 +1,23 @@
 import { useSession } from '../../contexts/SessionContext'
 
 export default function LogsTable() {
-  const { userCreated, userEmail } = useSession()
+  const { user } = useSession()
 
   return (
     <table>
       <thead>
         <tr>
           <th>Email</th>
+          <th>Created</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>
-            {userEmail}
+            {user.email}
+          </td>
+          <td>
+            {user.created}
           </td>
         </tr>
       </tbody>

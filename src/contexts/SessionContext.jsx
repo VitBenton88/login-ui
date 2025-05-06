@@ -1,12 +1,46 @@
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
+import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
+import { getSessionUserInfo, getUserbyId, updateUserEmailbyId, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
+
+function userReducer(state, action) {
+  switch (action.type) {
+    case 'SET_USER':
+      return {
+        email: action.payload.email,
+        created: action.payload.created
+      };
+    case 'CLEAR_USER':
+      return { email: '', created: '' };
+    default:
+      return state;
+  }
+}
+
+const initialUserState = {
+  email: '',
+  created: ''
+}
 
 export function SessionProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState(null)
+  const [user, userDispatch] = useReducer(userReducer, initialUserState)
+
+  const fetchUser = useCallback(async id => {
+    try {
+      if (id) {
+        setLoading(true)
+        const payload = await getUserbyId(id);
+        userDispatch({ type: 'SET_USER', payload })
+      }
+    } catch (error) {
+      throw new Error(error.cause || error.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   const fetchSession = useCallback(async () => {
     try {
@@ -24,6 +58,10 @@ export function SessionProvider({ children }) {
   useEffect(() => {
     fetchSession()
   }, [isLoggedIn])
+
+  useEffect(() => {
+    fetchUser(userId);
+  }, [userId])
 
   const login = async (email, password) => {
     try {
@@ -55,6 +93,7 @@ export function SessionProvider({ children }) {
     try {
       setLoading(true)
       await userLogout()
+      userDispatch({ type: 'CLEAR_USER' })
       setIsLoggedIn(false)
     } catch (error) {
       throw new Error(error.message)
@@ -64,7 +103,7 @@ export function SessionProvider({ children }) {
   }
 
   return (
-    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail }}>
+    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail, user }}>
       {children}
     </SessionContext.Provider>
   )

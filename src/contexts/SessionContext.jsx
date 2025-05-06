@@ -70,7 +70,7 @@ export function SessionProvider({ children }) {
       setIsLoggedIn(true)
       await fetchSession()
     } catch (error) {
-      console.log(error)
+      console.error(error)
       throw new Error(error.cause || error.message)
     } finally {
       setLoading(false)

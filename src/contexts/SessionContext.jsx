@@ -1,5 +1,5 @@
 import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
-import { getSessionUserInfo, getUserbyId, updateUserEmailbyId, userLogin, userLogout } from '../api'
+import { getRefreshToken, getSessionUserInfo, getUserbyId, updateUserEmailbyId, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
 
@@ -45,7 +45,17 @@ export function SessionProvider({ children }) {
       setUserId(id)
       setIsLoggedIn(true)
     } catch (error) {
-      setIsLoggedIn(false)
+      if (error?.message.includes('401')) {
+        try {
+          const res = await getRefreshToken();
+          const jsonResponse = await res.json();
+          localStorage.setItem('accessToken', jsonResponse.accessToken);
+          fetchSession();
+        } catch (error) {
+          setLoading(false)
+        }
+      }
+
       throw new Error(error.cause || error.message)
     } finally {
       setLoading(false)

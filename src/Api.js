@@ -49,6 +49,23 @@ export async function getAllLogs(signal) {
   return jsonResponse;
 }
 
+export async function getRefreshToken(signal) {
+  const response = await fetch('/auth/refresh', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
+    signal
+  });
+  const jsonResponse = await response.json();
+
+  if (!response.ok) {
+    throw new Error(jsonResponse?.message || 'Failed to get refresh token.');
+  }
+
+  return jsonResponse;
+}
+
 export async function getAllUsers(signal) {
   const response = await fetch('/users', {
     headers: {
@@ -105,7 +122,7 @@ export async function getSessionUserInfo(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to fetch session user data.');
+    throw new Error(`${response.status} ${jsonResponse?.error}` || 'Failed to fetch session user data.');
   }
 
   return jsonResponse;
@@ -135,7 +152,9 @@ export async function userLogin(email, password, signal) {
 export async function userLogout(signal) {
   const response = await fetch('/auth/logout', {
     method: 'POST',
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   })
   const jsonResponse = await response.json();

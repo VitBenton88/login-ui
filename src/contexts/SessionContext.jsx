@@ -1,18 +1,18 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getSessionUserInfo, updateUserEmail, userLogin, userLogout } from '../api'
+import { getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
 
 export function SessionProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [userEmail, setUserEmail] = useState(null)
+  const [userId, setUserId] = useState(null)
 
   const fetchSession = useCallback(async () => {
     try {
       if (isLoggedIn) {
-        const { email } = await getSessionUserInfo()
-        setUserEmail(email)
+        const { id } = await getSessionUserInfo()
+        setUserId(id)
       }
     } catch (error) {
       throw new Error(error.cause || error.message)
@@ -39,10 +39,10 @@ export function SessionProvider({ children }) {
     }
   }
 
-  const updateEmail = async email => {
+  const updateEmail = async (id, email) => {
     try {
       setLoading(true)
-      await updateUserEmail(email)
+      await updateUserEmailbyId(id, email)
     } catch (error) {
       console.log(error);
       throw new Error(error.cause || error.message)
@@ -64,7 +64,7 @@ export function SessionProvider({ children }) {
   }
 
   return (
-    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, updateEmail, userEmail }}>
+    <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail, userEmail }}>
       {children}
     </SessionContext.Provider>
   )

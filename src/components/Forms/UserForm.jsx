@@ -3,7 +3,7 @@ import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
 
 export default function UserForm() {
-  const { updateEmail, userEmail } = useSession()
+  const { updateEmail, userId, userEmail } = useSession()
   const [newEmail, setEmail] = useState('')
 
   const { notify } = useNotification()
@@ -12,7 +12,7 @@ export default function UserForm() {
     e.preventDefault()
 
     try {
-      await updateEmail(newEmail)
+      await updateEmail(userId, newEmail)
       notify('✅ Email updated successfully')
     } catch (err) {
       notify(`❌ Failed to update email: ${err.message}`)

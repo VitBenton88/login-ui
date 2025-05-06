@@ -1,11 +1,11 @@
 import { useSession } from '../../contexts/SessionContext'
 
 export default function UserForm() {
-  const { email } = useSession()
+  const { userEmail } = useSession()
 
   return (
     <>
-      <p>{email}</p>
+      <p>Email: {userEmail}</p>
     </>
   );
 }

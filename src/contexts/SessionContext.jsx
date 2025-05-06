@@ -44,10 +44,9 @@ export function SessionProvider({ children }) {
 
   const fetchSession = useCallback(async () => {
     try {
-      if (isLoggedIn) {
-        const { id } = await getSessionUserInfo()
-        setUserId(id)
-      }
+      const { id } = await getSessionUserInfo()
+      setUserId(id)
+      setIsLoggedIn(true)
     } catch (error) {
       throw new Error(error.cause || error.message)
     } finally {
@@ -57,7 +56,7 @@ export function SessionProvider({ children }) {
 
   useEffect(() => {
     fetchSession()
-  }, [isLoggedIn])
+  }, [])
 
   useEffect(() => {
     fetchUser(userId);

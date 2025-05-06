@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
 
-export default function Login() {
+export default function LoginForm() {
   const emailRef = useRef()
   const passwordRef = useRef()
 

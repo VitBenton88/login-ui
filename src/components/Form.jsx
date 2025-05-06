@@ -1,12 +1,12 @@
-import FormNav from '../components/navigations/FormNav'
-import Register from '../components/forms/Register'
-import Login from '../components/forms/Login'
+import FormNav from '../components/Navs/FormNav'
+import RegisterForm from '../components/Forms/RegisterForm'
+import LoginForm from '../components/Forms/LoginForm'
 import { useFormContext } from '../contexts/FormContext'
 
 export default function Main() {
   const { showLogin } = useFormContext()
 
-  const Form = showLogin ? <Login /> : <Register />
+  const Form = showLogin ? <LoginForm /> : <RegisterForm />
 
   return (
     <>

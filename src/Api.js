@@ -58,6 +58,21 @@ export async function registerUser(email, password) {
   }
 }
 
+export async function updateUserEmail(email) {
+  const response = await fetch('/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email, password })
+  })
+
+  if (!response.ok) {
+    const cause = registrationErrors[response.status] || registrationErrors.default
+    throw new Error('Registration failed.', { cause })
+  }
+}
+
 export async function getSessionUserInfo(signal) {
   const response = await fetch('/auth/me', {
     credentials: 'include',

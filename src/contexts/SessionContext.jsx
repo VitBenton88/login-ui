@@ -48,6 +48,7 @@ export function SessionProvider({ children }) {
       setUserId(id)
       setIsLoggedIn(true)
     } catch (error) {
+      setIsLoggedIn(false)
       throw new Error(error.cause || error.message)
     } finally {
       setLoading(false)
@@ -76,7 +77,7 @@ export function SessionProvider({ children }) {
     }
   }
 
-  const updateEmail = async (id, email) => {
+  const updateEmail = useCallback(async (id, email) => {
     try {
       setLoading(true)
       await updateUserEmailbyId(id, email)
@@ -86,9 +87,9 @@ export function SessionProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setLoading(true)
       await userLogout()
@@ -99,7 +100,7 @@ export function SessionProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return (
     <SessionContext.Provider value={{ isLoggedIn, logout, loading, login, userId, updateEmail, user }}>

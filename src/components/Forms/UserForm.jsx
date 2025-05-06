@@ -13,7 +13,7 @@ export default function UserForm() {
     e.preventDefault()
 
     if (!isValidEmail(newEmail)) {
-      return notify('Not a valid email format.')
+      return notify('Invalid email format.')
     }
 
     try {

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNotification } from '../../contexts/NotificationContext'
 import { useSession } from '../../contexts/SessionContext'
+import { isValidEmail } from '../../util/validation'
 
 export default function UserForm() {
   const { updateEmail, userId, user } = useSession()
@@ -10,6 +11,10 @@ export default function UserForm() {
 
   const handleSubmit = async e => {
     e.preventDefault()
+
+    if (!isValidEmail(newEmail)) {
+      return notify('Not a valid email format.')
+    }
 
     try {
       await updateEmail(userId, newEmail)

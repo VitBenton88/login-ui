@@ -2,7 +2,9 @@ import { loginErrors, registrationErrors, updateErrors } from './util/constants'
 
 export async function getUserbyId(userId, signal) {
   const response = await fetch(`/users/${userId}`, {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   });
   const jsonResponse = await response.json();
@@ -17,7 +19,9 @@ export async function getUserbyId(userId, signal) {
 export async function deleteUserById(userId, signal) {
   const response = await fetch(`/users/delete/${userId}`, {
     method: 'DELETE',
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   });
   const jsonResponse = await response.json();
@@ -31,7 +35,9 @@ export async function deleteUserById(userId, signal) {
 
 export async function getAllLogs(signal) {
   const response = await fetch('/logs', {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   });
   const jsonResponse = await response.json();
@@ -45,7 +51,9 @@ export async function getAllLogs(signal) {
 
 export async function getAllUsers(signal) {
   const response = await fetch('/users', {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   });
   const jsonResponse = await response.json();
@@ -89,7 +97,9 @@ export async function registerUser(email, password) {
 
 export async function getSessionUserInfo(signal) {
   const response = await fetch('/auth/me', {
-    credentials: 'include',
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+    },
     signal
   });
   const jsonResponse = await response.json();
@@ -116,6 +126,8 @@ export async function userLogin(email, password, signal) {
     const cause = loginErrors[response.status] || loginErrors.default
     throw new Error('User login failed.', { cause })
   }
+
+  localStorage.setItem('accessToken', jsonResponse.accessToken);
 
   return jsonResponse;
 }

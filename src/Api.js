@@ -59,7 +59,7 @@ export async function updateUserEmailbyId(id, email) {
 }
 
 export async function registerUser(email, password) {
-  const response = await fetch('/auth/register', {
+  const response = await fetch('/users/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

@@ -1,4 +1,4 @@
-import { loginErrors, registrationErrors } from './Constants'
+import { loginErrors, registrationErrors } from './consts'
 
 export async function deleteUserById(userId, signal) {
   const response = await fetch(`/users/delete/${userId}`, {

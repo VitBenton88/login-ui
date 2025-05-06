@@ -16,7 +16,7 @@ export async function deleteUserById(userId, signal) {
 }
 
 export async function getAllLogs(signal) {
-  const response = await fetch('/logs/getAll', {
+  const response = await fetch('/logs', {
     credentials: 'include',
     signal
   });
@@ -30,7 +30,7 @@ export async function getAllLogs(signal) {
 }
 
 export async function getAllUsers(signal) {
-  const response = await fetch('/users/getAll', {
+  const response = await fetch('/users', {
     credentials: 'include',
     signal
   });

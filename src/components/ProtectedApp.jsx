@@ -1,7 +1,7 @@
 import UserNav from './Navs/UserNav'
-import LogsTable from './Layouts/LogsTable'
-import UserForm from './Info/UserForm'
-import UsersTable from './Layouts/UsersTable'
+import LogsTable from './Tables/LogsTable'
+import UserForm from './Forms/UserForm'
+import UsersTable from './Tables/UsersTable'
 
 export default function ProtectedApp() {
   return (

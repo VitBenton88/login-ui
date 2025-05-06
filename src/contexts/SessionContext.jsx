@@ -31,14 +31,11 @@ export function SessionProvider({ children }) {
   const fetchUser = useCallback(async id => {
     try {
       if (id) {
-        setLoading(true)
         const payload = await getUserbyId(id);
         userDispatch({ type: 'SET_USER', payload })
       }
     } catch (error) {
       throw new Error(error.cause || error.message)
-    } finally {
-      setLoading(false)
     }
   }, [])
 

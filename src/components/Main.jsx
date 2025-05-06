@@ -9,8 +9,8 @@ export default function Main() {
   if (loading) return <Loader />
 
   return (
-    <>
+    <main>
       {isLoggedIn ? <ProtectedApp /> : <AuthPage />}
-    </>
+    </main>
   )
 }

@@ -47,12 +47,12 @@ export function SessionProvider({ children }) {
     } catch (error) {
       if (error?.message.includes('401')) {
         try {
-          const res = await getRefreshToken();
-          const jsonResponse = await res.json();
-          localStorage.setItem('accessToken', jsonResponse.accessToken);
-          fetchSession();
-        } catch (error) {
+          const { accessToken } = await getRefreshToken();
+          localStorage.setItem('accessToken', accessToken);
+          return await fetchSession();
+        } catch {
           setLoading(false)
+          return
         }
       }
 
@@ -100,6 +100,7 @@ export function SessionProvider({ children }) {
     try {
       setLoading(true)
       await userLogout()
+      localStorage.removeItem('accessToken')
       userDispatch({ type: 'CLEAR_USER' })
       setIsLoggedIn(false)
     } catch (error) {

@@ -19,7 +19,7 @@ export default function RegisterForm() {
     const password = passwordRef.current.value
 
     try {
-      registerUser(email, password)
+      await registerUser(email, password)
 
       notify('Successfully registered!', 'success')
       clearForm()

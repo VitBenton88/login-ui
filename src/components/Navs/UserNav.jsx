@@ -10,7 +10,7 @@ export default function UserNav() {
       logout()
       notify('Successfully logged out!', 'success')
     } catch (error) {
-      notify(err.message, 'error')
+      notify(error.message, 'error')
     }
   }
 

@@ -86,7 +86,8 @@ export async function updateUserEmailbyId(id, email) {
   const response = await fetch(`/users/update/${id}`, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
     body: JSON.stringify({ email })
   })

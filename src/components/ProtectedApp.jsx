@@ -5,7 +5,7 @@ import UserProfile from './UserProfile'
 import UsersTable from './Tables/UsersTable'
 
 export default function ProtectedApp() {
-  const [showUpdateForm, setLoading] = useState(true);
+  const [showUpdateForm, setShowUpdateForm] = useState(true);
 
   return (
     <>

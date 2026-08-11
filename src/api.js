@@ -1,7 +1,16 @@
 import { loginErrors, registrationErrors, updateErrors } from './util/constants'
 
+// Empty by default: relative paths resolve against Vite's dev proxy (see
+// vite.config.js) or against this app's own origin if it's served from the
+// same origin as simple-auth in production. Set VITE_API_URL at build time
+// when simple-auth is hosted elsewhere (e.g. a subdomain), and see the
+// README for the same-parent-domain requirement that comes with it — the
+// refresh cookie is SameSite=Strict, so this app and simple-auth must share
+// a parent domain no matter what this is set to.
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? ''
+
 export async function getUserbyId(userId, signal) {
-  const response = await fetch(`/users/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -17,7 +26,7 @@ export async function getUserbyId(userId, signal) {
 }
 
 export async function deleteUserById(userId, signal) {
-  const response = await fetch(`/users/delete/${userId}`, {
+  const response = await fetch(`${API_BASE_URL}/users/delete/${userId}`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
@@ -35,7 +44,7 @@ export async function deleteUserById(userId, signal) {
 }
 
 export async function getAllLogs(signal) {
-  const response = await fetch('/logs', {
+  const response = await fetch(`${API_BASE_URL}/logs`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -51,8 +60,9 @@ export async function getAllLogs(signal) {
 }
 
 export async function getRefreshToken(signal) {
-  const response = await fetch('/auth/refresh', {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
+    credentials: 'include', // sends the httpOnly refreshToken cookie
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -68,7 +78,7 @@ export async function getRefreshToken(signal) {
 }
 
 export async function getAllUsers(signal) {
-  const response = await fetch('/users', {
+  const response = await fetch(`${API_BASE_URL}/users`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -84,7 +94,7 @@ export async function getAllUsers(signal) {
 }
 
 export async function updateUserEmailbyId(id, email) {
-  const response = await fetch(`/users/update/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/users/update/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -100,7 +110,7 @@ export async function updateUserEmailbyId(id, email) {
 }
 
 export async function registerUser(email, password) {
-  const response = await fetch('/users/create', {
+  const response = await fetch(`${API_BASE_URL}/users/create`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -115,7 +125,7 @@ export async function registerUser(email, password) {
 }
 
 export async function getSessionUserInfo(signal) {
-  const response = await fetch('/auth/me', {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -131,8 +141,9 @@ export async function getSessionUserInfo(signal) {
 }
 
 export async function userLogin(email, password, signal) {
-  const response = await fetch('/auth/login', {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
+    credentials: 'include', // stores the httpOnly refreshToken cookie the response sets
     headers: {
       'Content-Type': 'application/json'
     },
@@ -152,8 +163,9 @@ export async function userLogin(email, password, signal) {
 }
 
 export async function userLogout(signal) {
-  const response = await fetch('/auth/logout', {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
     method: 'POST',
+    credentials: 'include', // sends the refreshToken cookie so the server can revoke it
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },

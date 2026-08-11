@@ -30,4 +30,13 @@ export default [
       ],
     },
   },
+  {
+    // Build config runs under Node, not the browser — separate globals from
+    // the app source above so `process` etc. resolve without loosening
+    // linting for anything that actually ships to the browser.
+    files: ['vite.config.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
 ]

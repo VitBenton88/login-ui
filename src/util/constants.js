@@ -24,7 +24,7 @@ export const updateErrors = {
   401: 'Incorrect details provided.',
   403: 'Your account is not authorized for this operation.',
   404: 'Account not found. Please register first.',
-  409: 'This account is already logged in elsewhere.',
+  409: 'That email is already in use by another account.',
   429: 'Too many update attempts. Please try again later.',
   default: 'An unexpected error occurred. Please try again.',
 }

@@ -10,7 +10,7 @@ export async function getUserbyId(userId, signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to fetch user.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch user.');
   }
 
   return jsonResponse;
@@ -24,13 +24,14 @@ export async function deleteUserById(userId, signal) {
     },
     signal
   });
-  const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to delete user.');
+    // Failure responses still carry a JSON body; success is a 204 with none.
+    const jsonResponse = await response.json().catch(() => null);
+    throw new Error(jsonResponse?.error || 'Failed to delete user.');
   }
 
-  return jsonResponse;
+  return null;
 }
 
 export async function getAllLogs(signal) {
@@ -43,7 +44,7 @@ export async function getAllLogs(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to fetch all logs.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch all logs.');
   }
 
   return jsonResponse;
@@ -60,7 +61,7 @@ export async function getRefreshToken(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to get refresh token.');
+    throw new Error(jsonResponse?.error || 'Failed to get refresh token.');
   }
 
   return jsonResponse;
@@ -76,7 +77,7 @@ export async function getAllUsers(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.message || 'Failed to fetch all users.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch all users.');
   }
 
   return jsonResponse;

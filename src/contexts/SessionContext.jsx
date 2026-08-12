@@ -31,10 +31,6 @@ export function SessionProvider({ children }) {
   const [userId, setUserId] = useState(null)
   const [user, userDispatch] = useReducer(userReducer, initialUserState)
   const { notify } = useNotification()
-  // Tracks whether *this tab* has ever confirmed a session, so a failed
-  // refresh on first page load (no cookie yet — completely normal) can be
-  // told apart from a refresh failing after the user was already in.
-  const wasLoggedInRef = useRef(false)
   const channelRef = useRef(null)
 
   useEffect(() => {
@@ -47,6 +43,7 @@ export function SessionProvider({ children }) {
       if (event.data?.type === 'token-refreshed') {
         localStorage.setItem('accessToken', event.data.accessToken)
       } else if (event.data?.type === 'session-ended') {
+        localStorage.removeItem('accessToken')
         setIsLoggedIn(false)
         userDispatch({ type: 'CLEAR_USER' })
       }
@@ -63,12 +60,21 @@ export function SessionProvider({ children }) {
   // effect — each get their own bounded single retry instead of
   // interfering with each other's.
   const fetchSession = useCallback(async (isRetry = false) => {
+    // A stored accessToken can only have gotten there via a prior
+    // successful login (this tab or a sibling tab, via the
+    // BroadcastChannel `token-refreshed` message) — so its presence
+    // before this call chain touches anything is real evidence this
+    // browser believed it had a session, and unlike an in-memory ref,
+    // that evidence survives a reload. Only the top-level (non-retry)
+    // call's snapshot matters — the recursive retry call must not
+    // re-read localStorage after the refresh above just updated it.
+    const hadStoredSession = !isRetry && !!localStorage.getItem('accessToken')
+
     try {
       const { id, email, created, isAdmin } = await getSessionUserInfo()
       setUserId(id)
       userDispatch({ type: 'SET_USER', payload: { email, created, isAdmin } })
       setIsLoggedIn(true)
-      wasLoggedInRef.current = true
       return true
     } catch (error) {
       if (error.cause?.status === 401 && !isRetry) {
@@ -82,18 +88,18 @@ export function SessionProvider({ children }) {
         } catch (refreshError) {
           if (refreshError.cause?.status === 429) {
             notify('Too many attempts. Please wait a moment and try again.', 'error')
-          } else if (wasLoggedInRef.current) {
-            // Distinct from the silent first-visit case below: this tab
-            // was genuinely logged in and the refresh got rejected —
-            // most likely another tab/device refreshed first and rotated
-            // the token this one was holding.
+          } else if (hadStoredSession) {
+            // Distinct from the silent first-visit case below: this
+            // browser had a stored token — i.e. was genuinely logged in
+            // — and the refresh got rejected, most likely because
+            // another tab/device refreshed first and rotated the token
+            // this one was holding.
             notify('Your session ended (perhaps you signed in elsewhere). Please log in again.', 'error')
             channelRef.current?.postMessage({ type: 'session-ended' })
           }
-          // A plain 401 here (wasLoggedInRef never set) just means "not
-          // logged in" (e.g. first visit) — no toast, straight to login.
+          // No stored token at all means this was never a real session
+          // to begin with (e.g. first visit) — no toast, straight to login.
 
-          wasLoggedInRef.current = false
           setIsLoggedIn(false)
           return false
         }
@@ -150,7 +156,6 @@ export function SessionProvider({ children }) {
       localStorage.removeItem('accessToken')
       userDispatch({ type: 'CLEAR_USER' })
       setIsLoggedIn(false)
-      wasLoggedInRef.current = false
     } catch (error) {
       throw new Error(error.message)
     } finally {

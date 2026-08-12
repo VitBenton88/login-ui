@@ -49,8 +49,13 @@ export async function deleteUserById(userId, signal) {
   return null;
 }
 
-export async function getAllLogs(signal) {
-  const response = await fetch(`${API_BASE_URL}/logs`, {
+export async function getAllLogs({ limit, offset } = {}, signal) {
+  const params = new URLSearchParams()
+  if (limit != null) params.set('limit', limit)
+  if (offset != null) params.set('offset', offset)
+  const query = params.toString()
+
+  const response = await fetch(`${API_BASE_URL}/logs${query ? `?${query}` : ''}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },
@@ -87,8 +92,13 @@ export async function getRefreshToken(signal) {
   return jsonResponse;
 }
 
-export async function getAllUsers(signal) {
-  const response = await fetch(`${API_BASE_URL}/users`, {
+export async function getAllUsers({ limit, offset } = {}, signal) {
+  const params = new URLSearchParams()
+  if (limit != null) params.set('limit', limit)
+  if (offset != null) params.set('offset', offset)
+  const query = params.toString()
+
+  const response = await fetch(`${API_BASE_URL}/users${query ? `?${query}` : ''}`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('accessToken')}`
     },

@@ -1,4 +1,4 @@
-import { createContext, useReducer, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
 import { getRefreshToken, getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
 import { useNotification } from './NotificationContext'
 
@@ -31,30 +31,28 @@ export function SessionProvider({ children }) {
   const [userId, setUserId] = useState(null)
   const [user, userDispatch] = useReducer(userReducer, initialUserState)
   const { notify } = useNotification()
-  const hasRetriedRef = useRef(false)
 
   // Resolves true only once /auth/me has actually confirmed a session —
   // never throws, so callers always get a definitive answer instead of a
-  // mix of thrown errors and silently-swallowed failures.
-  const fetchSession = useCallback(async () => {
+  // mix of thrown errors and silently-swallowed failures. `isRetry` is
+  // local to each call chain (not shared component state) so that two
+  // genuinely concurrent chains — e.g. StrictMode's double-invoked mount
+  // effect — each get their own bounded single retry instead of
+  // interfering with each other's.
+  const fetchSession = useCallback(async (isRetry = false) => {
     try {
       const { id, email, created, isAdmin } = await getSessionUserInfo()
       setUserId(id)
       userDispatch({ type: 'SET_USER', payload: { email, created, isAdmin } })
       setIsLoggedIn(true)
-      hasRetriedRef.current = false
       return true
     } catch (error) {
-      if (error.cause?.status === 401 && !hasRetriedRef.current) {
-        hasRetriedRef.current = true
-
+      if (error.cause?.status === 401 && !isRetry) {
         try {
           const { accessToken } = await getRefreshToken();
           localStorage.setItem('accessToken', accessToken);
-          return await fetchSession()
+          return await fetchSession(true)
         } catch (refreshError) {
-          hasRetriedRef.current = false
-
           if (refreshError.cause?.status === 429) {
             notify('Too many attempts. Please wait a moment and try again.', 'error')
           }
@@ -66,8 +64,6 @@ export function SessionProvider({ children }) {
           return false
         }
       }
-
-      hasRetriedRef.current = false
 
       if (error.cause?.status !== 401) {
         notify(error.message, 'error')

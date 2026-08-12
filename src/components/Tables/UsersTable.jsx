@@ -24,6 +24,7 @@ export default function UsersTable() {
 
         setUsers(prev => prev.filter(({ id }) => id !== userId))
         setTotal(prev => prev - 1)
+        setOffset(prev => prev - 1)
         notify('Successfully deleted user.', 'success')
       } catch (err) {
         console.error(err)

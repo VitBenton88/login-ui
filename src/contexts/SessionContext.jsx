@@ -68,7 +68,8 @@ export function SessionProvider({ children }) {
     // that evidence survives a reload. Only the top-level (non-retry)
     // call's snapshot matters — the recursive retry call must not
     // re-read localStorage after the refresh above just updated it.
-    const hadStoredSession = !isRetry && !!localStorage.getItem('accessToken')
+    const storedTokenAtStart = isRetry ? null : localStorage.getItem('accessToken')
+    const hadStoredSession = !isRetry && !!storedTokenAtStart
 
     try {
       const { id, email, created, isAdmin } = await getSessionUserInfo()
@@ -86,19 +87,38 @@ export function SessionProvider({ children }) {
           channelRef.current?.postMessage({ type: 'token-refreshed', accessToken })
           return await fetchSession(true)
         } catch (refreshError) {
+          // A sibling tab may have refreshed successfully — and rotated
+          // the shared refresh token underneath us — while our own
+          // request was in flight. token_version is per-user, not
+          // per-tab, so that's a live, valid session, not a dead one:
+          // adopt the token the sibling broadcast instead of declaring
+          // ourselves logged out, which would also broadcast
+          // session-ended and silently sign the sibling back out too.
+          if (localStorage.getItem('accessToken') !== storedTokenAtStart) {
+            return await fetchSession(true)
+          }
+
           if (refreshError.cause?.status === 429) {
             notify('Too many attempts. Please wait a moment and try again.', 'error')
-          } else if (hadStoredSession) {
-            // Distinct from the silent first-visit case below: this
-            // browser had a stored token — i.e. was genuinely logged in
-            // — and the refresh got rejected, most likely because
-            // another tab/device refreshed first and rotated the token
-            // this one was holding.
-            notify('Your session ended (perhaps you signed in elsewhere). Please log in again.', 'error')
-            channelRef.current?.postMessage({ type: 'session-ended' })
+          } else {
+            if (hadStoredSession) {
+              // Distinct from the silent first-visit case below: this
+              // browser had a stored token — i.e. was genuinely logged in
+              // — and the refresh got rejected, most likely because
+              // another tab/device refreshed first and rotated the token
+              // this one was holding.
+              notify('Your session ended (perhaps you signed in elsewhere). Please log in again.', 'error')
+              channelRef.current?.postMessage({ type: 'session-ended' })
+            }
+            // No stored token at all means this was never a real session
+            // to begin with (e.g. first visit) — no toast, straight to login.
+
+            // The stored token is genuinely dead either way (expired,
+            // revoked, or never existed) — clear it so a later reload
+            // doesn't treat it as evidence of a session that no longer
+            // exists and re-fire this same toast forever.
+            localStorage.removeItem('accessToken')
           }
-          // No stored token at all means this was never a real session
-          // to begin with (e.g. first visit) — no toast, straight to login.
 
           setIsLoggedIn(false)
           return false

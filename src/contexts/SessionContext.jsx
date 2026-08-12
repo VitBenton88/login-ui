@@ -1,5 +1,5 @@
 import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
-import { getRefreshToken, getSessionUserInfo, getUserbyId, updateUserEmailbyId, userLogin, userLogout } from '../api'
+import { getRefreshToken, getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
 
 const SessionContext = createContext()
 
@@ -8,10 +8,11 @@ function userReducer(state, action) {
     case 'SET_USER':
       return {
         email: action.payload.email,
-        created: action.payload.created
+        created: action.payload.created,
+        isAdmin: action.payload.isAdmin
       };
     case 'CLEAR_USER':
-      return { email: '', created: '' };
+      return { email: '', created: '', isAdmin: false };
     default:
       return state;
   }
@@ -19,7 +20,8 @@ function userReducer(state, action) {
 
 const initialUserState = {
   email: '',
-  created: ''
+  created: '',
+  isAdmin: false
 }
 
 export function SessionProvider({ children }) {
@@ -28,21 +30,11 @@ export function SessionProvider({ children }) {
   const [userId, setUserId] = useState(null)
   const [user, userDispatch] = useReducer(userReducer, initialUserState)
 
-  const fetchUser = useCallback(async id => {
-    try {
-      if (id) {
-        const payload = await getUserbyId(id);
-        userDispatch({ type: 'SET_USER', payload })
-      }
-    } catch (error) {
-      throw new Error(error.cause || error.message)
-    }
-  }, [])
-
   const fetchSession = useCallback(async () => {
     try {
-      const { id } = await getSessionUserInfo()
+      const { id, email, created, isAdmin } = await getSessionUserInfo()
       setUserId(id)
+      userDispatch({ type: 'SET_USER', payload: { email, created, isAdmin } })
       setIsLoggedIn(true)
     } catch (error) {
       if (error?.message.includes('401')) {
@@ -60,15 +52,11 @@ export function SessionProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [isLoggedIn])
+  }, [])
 
   useEffect(() => {
     fetchSession()
   }, [])
-
-  useEffect(() => {
-    fetchUser(userId);
-  }, [userId])
 
   const login = async (email, password) => {
     try {

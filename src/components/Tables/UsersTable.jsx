@@ -37,7 +37,10 @@ export default function UsersTable() {
         const fetchedUsers = await getAllUsers(controller.signal);
         setUsers(fetchedUsers);
       } catch (err) {
-        notify(err.cause || err.message, 'error')
+        // Belt-and-suspenders: ProtectedApp no longer mounts this component
+        // for non-admins, but an admin's session could be downgraded
+        // mid-visit (e.g. ADMIN_EMAILS changed server-side).
+        notify(err.cause?.status === 403 ? 'You no longer have permission to view users.' : err.message, 'error')
       } finally {
         setLoading(false);
       }

@@ -1,5 +1,11 @@
 import { loginErrors, registrationErrors, updateErrors } from './util/constants'
 
+// Two error conventions coexist below, matching what each endpoint needs:
+// - Endpoints with curated per-status copy (login/registration/update) throw
+//   with `cause: <string>` — the message meant to be shown to the user.
+// - Endpoints callers need to branch on programmatically (session/list
+//   endpoints) throw with `cause: { status }` instead.
+
 // Empty by default: relative paths resolve against Vite's dev proxy (see
 // vite.config.js) or against this app's own origin if it's served from the
 // same origin as simple-auth in production. Set VITE_API_URL at build time
@@ -53,7 +59,9 @@ export async function getAllLogs(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.error || 'Failed to fetch all logs.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch all logs.', {
+      cause: { status: response.status }
+    });
   }
 
   return jsonResponse;
@@ -87,7 +95,9 @@ export async function getAllUsers(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.error || 'Failed to fetch all users.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch all users.', {
+      cause: { status: response.status }
+    });
   }
 
   return jsonResponse;

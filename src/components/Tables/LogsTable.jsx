@@ -16,7 +16,7 @@ export default function LogsTable() {
         const fetchedLogs = await getAllLogs(controller.signal);
         setLogs(fetchedLogs);
       } catch (err) {
-        notify(err.cause || err.message, 'error')
+        notify(err.cause?.status === 403 ? 'You no longer have permission to view logs.' : err.message, 'error')
       } finally {
         setLoading(false);
       }

@@ -79,7 +79,9 @@ export async function getRefreshToken(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(jsonResponse?.error || 'Failed to get refresh token.');
+    throw new Error(jsonResponse?.error || 'Failed to get refresh token.', {
+      cause: { status: response.status }
+    });
   }
 
   return jsonResponse;
@@ -144,7 +146,9 @@ export async function getSessionUserInfo(signal) {
   const jsonResponse = await response.json();
 
   if (!response.ok) {
-    throw new Error(`${response.status} ${jsonResponse?.error}` || 'Failed to fetch session user data.');
+    throw new Error(jsonResponse?.error || 'Failed to fetch session user data.', {
+      cause: { status: response.status }
+    });
   }
 
   return jsonResponse;

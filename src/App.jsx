@@ -6,11 +6,11 @@ import { SessionProvider } from './contexts/SessionContext'
 
 export default function App() {
   return (
-    <SessionProvider>
-      <NotificationProvider>
+    <NotificationProvider>
+      <SessionProvider>
         <Notification />
         <Main />
-      </NotificationProvider>
-    </SessionProvider>
+      </SessionProvider>
+    </NotificationProvider>
   )
 }

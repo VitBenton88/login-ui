@@ -1,5 +1,6 @@
-import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useReducer, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { getRefreshToken, getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
+import { useNotification } from './NotificationContext'
 
 const SessionContext = createContext()
 
@@ -29,41 +30,69 @@ export function SessionProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState(null)
   const [user, userDispatch] = useReducer(userReducer, initialUserState)
+  const { notify } = useNotification()
+  const hasRetriedRef = useRef(false)
 
+  // Resolves true only once /auth/me has actually confirmed a session —
+  // never throws, so callers always get a definitive answer instead of a
+  // mix of thrown errors and silently-swallowed failures.
   const fetchSession = useCallback(async () => {
     try {
       const { id, email, created, isAdmin } = await getSessionUserInfo()
       setUserId(id)
       userDispatch({ type: 'SET_USER', payload: { email, created, isAdmin } })
       setIsLoggedIn(true)
+      hasRetriedRef.current = false
+      return true
     } catch (error) {
-      if (error?.message.includes('401')) {
+      if (error.cause?.status === 401 && !hasRetriedRef.current) {
+        hasRetriedRef.current = true
+
         try {
           const { accessToken } = await getRefreshToken();
           localStorage.setItem('accessToken', accessToken);
-          return await fetchSession();
-        } catch {
-          setLoading(false)
-          return
+          return await fetchSession()
+        } catch (refreshError) {
+          hasRetriedRef.current = false
+
+          if (refreshError.cause?.status === 429) {
+            notify('Too many attempts. Please wait a moment and try again.', 'error')
+          }
+          // A plain 401 here just means "not logged in" (e.g. first visit,
+          // or a naturally expired session) — no toast, straight to the
+          // login screen.
+
+          setIsLoggedIn(false)
+          return false
         }
       }
 
-      throw new Error(error.cause || error.message)
+      hasRetriedRef.current = false
+
+      if (error.cause?.status !== 401) {
+        notify(error.message, 'error')
+      }
+
+      setIsLoggedIn(false)
+      return false
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [notify])
 
   useEffect(() => {
-    fetchSession()
+    fetchSession().catch(error => notify(error.message, 'error'))
   }, [])
 
   const login = async (email, password) => {
     try {
       setLoading(true)
       await userLogin(email, password)
-      setIsLoggedIn(true)
-      await fetchSession()
+      const succeeded = await fetchSession()
+
+      if (!succeeded) {
+        throw new Error('Logged in, but failed to load your session. Please try again.')
+      }
     } catch (error) {
       console.error(error)
       throw new Error(error.cause || error.message)

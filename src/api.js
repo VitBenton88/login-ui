@@ -72,24 +72,38 @@ export async function getAllLogs({ limit, offset } = {}, signal) {
   return jsonResponse;
 }
 
-export async function getRefreshToken(signal) {
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include', // sends the httpOnly refreshToken cookie
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-    },
-    signal
-  });
-  const jsonResponse = await response.json();
+// /auth/refresh is entirely cookie-driven — simple-auth's refreshHandler
+// never reads the Authorization header, so it was dead weight here.
+//
+// Concurrent callers share one in-flight request instead of each firing
+// their own: refreshHandler rotates the refresh token on every use, so a
+// second real request racing the first would find its own token already
+// spent by the time it lands.
+let refreshPromise = null
 
-  if (!response.ok) {
-    throw new Error(jsonResponse?.error || 'Failed to get refresh token.', {
-      cause: { status: response.status }
+export function getRefreshToken(signal) {
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = (async () => {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include', // sends the httpOnly refreshToken cookie
+      signal
     });
-  }
+    const jsonResponse = await response.json();
 
-  return jsonResponse;
+    if (!response.ok) {
+      throw new Error(jsonResponse?.error || 'Failed to get refresh token.', {
+        cause: { status: response.status }
+      });
+    }
+
+    return jsonResponse;
+  })()
+
+  refreshPromise = refreshPromise.finally(() => { refreshPromise = null })
+
+  return refreshPromise;
 }
 
 export async function getAllUsers({ limit, offset } = {}, signal) {

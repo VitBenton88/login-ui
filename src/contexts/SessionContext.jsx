@@ -1,4 +1,4 @@
-import { createContext, useReducer, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useReducer, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { getRefreshToken, getSessionUserInfo, updateUserEmailbyId, userLogin, userLogout } from '../api'
 import { useNotification } from './NotificationContext'
 
@@ -31,6 +31,29 @@ export function SessionProvider({ children }) {
   const [userId, setUserId] = useState(null)
   const [user, userDispatch] = useReducer(userReducer, initialUserState)
   const { notify } = useNotification()
+  // Tracks whether *this tab* has ever confirmed a session, so a failed
+  // refresh on first page load (no cookie yet — completely normal) can be
+  // told apart from a refresh failing after the user was already in.
+  const wasLoggedInRef = useRef(false)
+  const channelRef = useRef(null)
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+
+    const channel = new BroadcastChannel('session')
+    channelRef.current = channel
+
+    channel.onmessage = event => {
+      if (event.data?.type === 'token-refreshed') {
+        localStorage.setItem('accessToken', event.data.accessToken)
+      } else if (event.data?.type === 'session-ended') {
+        setIsLoggedIn(false)
+        userDispatch({ type: 'CLEAR_USER' })
+      }
+    }
+
+    return () => channel.close()
+  }, [])
 
   // Resolves true only once /auth/me has actually confirmed a session —
   // never throws, so callers always get a definitive answer instead of a
@@ -45,21 +68,32 @@ export function SessionProvider({ children }) {
       setUserId(id)
       userDispatch({ type: 'SET_USER', payload: { email, created, isAdmin } })
       setIsLoggedIn(true)
+      wasLoggedInRef.current = true
       return true
     } catch (error) {
       if (error.cause?.status === 401 && !isRetry) {
         try {
           const { accessToken } = await getRefreshToken();
           localStorage.setItem('accessToken', accessToken);
+          // Other tabs can reuse this token instead of racing their own
+          // refresh against the same (now-rotated) cookie.
+          channelRef.current?.postMessage({ type: 'token-refreshed', accessToken })
           return await fetchSession(true)
         } catch (refreshError) {
           if (refreshError.cause?.status === 429) {
             notify('Too many attempts. Please wait a moment and try again.', 'error')
+          } else if (wasLoggedInRef.current) {
+            // Distinct from the silent first-visit case below: this tab
+            // was genuinely logged in and the refresh got rejected —
+            // most likely another tab/device refreshed first and rotated
+            // the token this one was holding.
+            notify('Your session ended (perhaps you signed in elsewhere). Please log in again.', 'error')
+            channelRef.current?.postMessage({ type: 'session-ended' })
           }
-          // A plain 401 here just means "not logged in" (e.g. first visit,
-          // or a naturally expired session) — no toast, straight to the
-          // login screen.
+          // A plain 401 here (wasLoggedInRef never set) just means "not
+          // logged in" (e.g. first visit) — no toast, straight to login.
 
+          wasLoggedInRef.current = false
           setIsLoggedIn(false)
           return false
         }
@@ -116,6 +150,7 @@ export function SessionProvider({ children }) {
       localStorage.removeItem('accessToken')
       userDispatch({ type: 'CLEAR_USER' })
       setIsLoggedIn(false)
+      wasLoggedInRef.current = false
     } catch (error) {
       throw new Error(error.message)
     } finally {
